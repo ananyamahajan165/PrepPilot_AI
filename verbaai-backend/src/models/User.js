@@ -4,6 +4,7 @@ import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
 
 const userSchema = new mongoose.Schema(
+
   {
     name: {
       type: String,
@@ -114,5 +115,7 @@ userSchema.methods.generateRefreshToken = function () {
 };
 
 const User = mongoose.model("User", userSchema);
+
+
 
 export default User;
