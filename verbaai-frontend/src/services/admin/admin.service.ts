@@ -1,4 +1,21 @@
-import API from "../lib/api";
+import API from "../../lib/api";
+
+export type AdminDashboardStats = {
+  totalUsers: number;
+  totalInterviews: number;
+  completedInterviews: number;
+  averageScore: number;
+};
+
+export type AdminUser = {
+  _id: string;
+  name: string;
+  email: string;
+  college?: string;
+  role: string;
+  isVerified: boolean;
+  createdAt: string;
+};
 
 class AdminService {
   async getDashboard() {
@@ -8,6 +25,11 @@ class AdminService {
 
   async getUsers() {
     const response = await API.get("/admin/users");
+    return response.data;
+  }
+
+  async getInterviews() {
+    const response = await API.get("/admin/interviews");
     return response.data;
   }
 

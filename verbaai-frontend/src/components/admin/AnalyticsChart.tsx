@@ -8,7 +8,7 @@ import {
   CartesianGrid,
 } from "recharts";
 
-import type { AdminDashboardStats } from "../../../services/admin/admin.service";
+import type { AdminDashboardStats } from "../../services/admin/admin.service";
 
 interface AnalyticsChartProps {
   stats: AdminDashboardStats;

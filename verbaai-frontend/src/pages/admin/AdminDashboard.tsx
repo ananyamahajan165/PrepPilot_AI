@@ -1,12 +1,10 @@
 import { useEffect, useState } from "react";
 import { Users, Briefcase, Trophy, BarChart3 } from "lucide-react";
-import adminService from "../services/admin.service";
+import AdminSidebar from "../../components/admin/AdminSidebar";
 import AdminTopbar from "../../components/admin/AdminTopbar";
 import StatsCard from "../../components/admin/StatsCard";
 
-import AdminService, {
-  type AdminDashboardStats,
-} from "../../services/admin/admin.service";
+import AdminService, { type AdminDashboardStats } from "../../services/admin/admin.service";
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState<AdminDashboardStats>({

@@ -1,0 +1,13 @@
+{
+  "name": "verbaai",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"npm --prefix verbaai-backend run dev\" \"npm --prefix verbaai-frontend run dev\"",
+    "start:backend": "npm --prefix verbaai-backend start",
+    "start:frontend": "npm --prefix verbaai-frontend run preview"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.0"
+  }
+}
