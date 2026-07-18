@@ -14,30 +14,29 @@ export interface LoginData {
 class AuthService {
   async register(data: RegisterData) {
     const response = await API.post("/auth/register", data);
-    return response.data;
+    return response.data?.data || response.data;
   }
 
   async login(data: LoginData) {
     const response = await API.post("/auth/login", data);
+    const payload = response.data?.data || response.data;
 
-    if (response.data?.accessToken) {
-      localStorage.setItem(
-        "accessToken",
-        response.data.accessToken
-      );
+    if (payload?.accessToken) {
+      localStorage.setItem("accessToken", payload.accessToken);
     }
 
-    return response.data;
+    return payload;
   }
 
   async logout() {
     localStorage.removeItem("accessToken");
-    return API.post("/auth/logout");
+    const response = await API.post("/auth/logout");
+    return response.data?.data || response.data;
   }
 
  async getCurrentUser() {
   const response = await API.get("/auth/me");
-  return response.data;
+  return response.data?.data || response.data;
 }
 }
 
