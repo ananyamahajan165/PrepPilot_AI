@@ -1,7 +1,6 @@
 {
   "name": "verbaai",
   "version": "1.0.0",
-<<<<<<< HEAD
   "description": "VerbaAI - AI Powered Interview & English Communication Coach",
   "private": true,
   "workspaces": [
@@ -27,15 +26,5 @@
     "express-session": "^1.19.0",
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0"
-=======
-  "private": true,
-  "scripts": {
-    "dev": "concurrently \"npm --prefix verbaai-backend run dev\" \"npm --prefix verbaai-frontend run dev\"",
-    "start:backend": "npm --prefix verbaai-backend start",
-    "start:frontend": "npm --prefix verbaai-frontend run preview"
-  },
-  "devDependencies": {
-    "concurrently": "^8.2.0"
->>>>>>> aac5780b3aa23e8117c4176750a877e11a031d47
   }
 }
