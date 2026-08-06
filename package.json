@@ -4,27 +4,22 @@
   "description": "VerbaAI - AI Powered Interview & English Communication Coach",
   "private": true,
   "workspaces": [
-    "frontend",
-    "backend"
+    "verbaai-frontend",
+    "verbaai-backend"
   ],
   "scripts": {
-    "dev": "concurrently -n backend,frontend -c yellow,cyan \"npm run dev --workspace=backend\" \"npm run dev --workspace=frontend\"",
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:backend": "npm run dev --workspace=backend",
-    "build": "npm run build --workspace=frontend",
-    "build:frontend": "npm run build --workspace=frontend",
-    "preview": "npm run preview --workspace=frontend",
-    "start": "npm run start --workspace=backend",
-    "start:backend": "npm run start --workspace=backend",
+    "dev": "concurrently -n backend,frontend -c yellow,cyan \"npm run dev --workspace=verbaai-backend\" \"npm run dev --workspace=verbaai-frontend\"",
+    "dev:frontend": "npm run dev --workspace=verbaai-frontend",
+    "dev:backend": "npm run dev --workspace=verbaai-backend",
+    "build": "npm run build --workspace=verbaai-frontend",
+    "build:frontend": "npm run build --workspace=verbaai-frontend",
+    "preview": "npm run preview --workspace=verbaai-frontend",
+    "start": "npm run start --workspace=verbaai-backend",
+    "start:backend": "npm run start --workspace=verbaai-backend",
     "install:all": "npm install"
   },
   "devDependencies": {
     "concurrently": "^8.2.2",
     "nodemon": "^3.1.14"
-  },
-  "dependencies": {
-    "express-session": "^1.19.0",
-    "passport": "^0.7.0",
-    "passport-google-oauth20": "^2.0.0"
   }
 }
