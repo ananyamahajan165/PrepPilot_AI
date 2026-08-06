@@ -36,4 +36,5 @@ Thumbs.db
 coverage/
 
 # --- Misc ---
-*.local
+*.localverbaai-backend/.env
+verbaai-frontend/.env
