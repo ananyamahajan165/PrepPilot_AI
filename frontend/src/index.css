@@ -1,0 +1,123 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Single source of truth for every native input, select, and textarea in
+     the authenticated app. Browsers apply their own default white
+     background and black text to form elements regardless of the page's
+     background, so this sets bg/text explicitly rather than relying on
+     inheritance -- that's what prevents the "white input box in dark mode"
+     bug. Any new form field should use this class instead of hand-rolling
+     border, background, and text classes again. */
+  .form-field {
+    @apply w-full rounded-md px-3 py-2 text-sm bg-surface-secondary border border-border text-fg placeholder:text-fg-muted transition-colors focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary disabled:opacity-60 disabled:cursor-not-allowed;
+  }
+
+  /* Premium dashboard card: same surface as .card everywhere else, but with
+     a soft ambient glow and lift on hover so the score/skill sections read
+     as "premium product" rather than a flat CRUD table. Used by the new
+     Score Overview, Skill Radar, Learning Calendar, and Motivation cards. */
+  .card-premium {
+    @apply relative rounded-2xl border border-border bg-gradient-to-br from-card to-background overflow-hidden transition-all duration-300;
+  }
+  .card-premium:hover {
+    transform: translateY(-2px);
+    border-color: rgba(242, 184, 75, 0.4);
+    box-shadow: 0 12px 32px -12px rgba(242, 184, 75, 0.18);
+  }
+}
+
+/* ===========================================================
+   Centralized design tokens
+   -----------------------------------------------------------
+   One source of truth for every color used by the authenticated
+   app (Dashboard, Communication Coach, Interview, Resume,
+   Profile, History, Auth). Components consume these via the
+   Tailwind tokens defined in tailwind.config.js (bg-background,
+   bg-card, text-fg, border-border, bg-primary, ...) — never via
+   raw slate/gray/white/black classes. Flipping the `dark` class
+   on <html> (done by ThemeContext) swaps every value below at
+   once, so the whole app switches theme consistently with no
+   per-component logic required.
+   =========================================================== */
+:root {
+  --background: #fafafc;
+  --surface: #ffffff;
+  --surface-secondary: #f5f6fa;
+  --card: #ffffff;
+  --card-hover: #f5f6fa;
+  --border: #e5e7eb;
+
+  --text-primary: #111827;
+  --text-secondary: #4b5563;
+  --text-muted: #6b7280;
+
+  --primary: #f4b942;
+  --primary-hover: #e5a72a;
+  --primary-foreground: #111827;
+
+  --accent: #f4b942;
+  --accent-foreground: #111827;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+}
+
+.dark {
+  --background: #0b0f19;
+  --surface: #121826;
+  --surface-secondary: #1a2234;
+  --card: #121826;
+  --card-hover: #1a2234;
+  --border: #232939;
+
+  --text-primary: #f3f1ea;
+  --text-secondary: #a6adbd;
+  --text-muted: #6b7280;
+
+  --primary: #f2b84b;
+  --primary-hover: #f7cc79;
+  --primary-foreground: #0b0f19;
+
+  --accent: #f2b84b;
+  --accent-foreground: #0b0f19;
+
+  --danger: #f87171;
+  --danger-hover: #fca5a5;
+}
+
+html {
+  scroll-behavior: smooth;
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Default page background/text for every authenticated page — comes for
+   free everywhere Layout is used, and prevents any white/black flash
+   while a page's own content is still loading. */
+body {
+  background-color: var(--background);
+  color: var(--text-primary);
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+/* Respect OS-level "reduce motion" — disables the ambient/looping
+   animations used on the landing page (waveform drift, floating card)
+   without breaking layout. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Landing page selection color (scoped via class, doesn't affect the rest
+   of the app's default browser selection styling). */
+.landing-page ::selection {
+  background: #f2b84b;
+  color: #0a0d14;
+}

@@ -1,0 +1,39 @@
+# --- Secrets: NEVER commit these ---
+.env
+.env.local
+.env.*.local
+backend/.env
+frontend/.env
+# .env.example files ARE meant to be committed (placeholders only) —
+# explicitly un-ignore them in case a broader rule above ever matches them.
+!.env.example
+!**/.env.example
+
+# --- Dependencies ---
+node_modules/
+**/node_modules/
+
+# --- Build output ---
+frontend/dist/
+backend/dist/
+dist/
+build/
+
+# --- Logs ---
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+*.log
+
+# --- OS / editor junk ---
+.DS_Store
+Thumbs.db
+.vscode/*
+!.vscode/extensions.json
+.idea/
+
+# --- Test/coverage output ---
+coverage/
+
+# --- Misc ---
+*.local
