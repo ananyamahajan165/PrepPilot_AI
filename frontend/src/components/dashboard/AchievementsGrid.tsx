@@ -20,8 +20,10 @@ export default function AchievementsGrid({ achievements }: { achievements: Achie
           return (
             <FadeIn key={a.id} delay={staggerDelay(i)}>
               <div
-                className={`relative h-full rounded-xl border p-6 overflow-hidden transition-all ${
-                  a.earned ? "border-primary/40 bg-primary/[0.06]" : "border-border bg-card"
+                className={`relative h-full rounded-[20px] border p-8 overflow-hidden transition-all duration-300 hover:-translate-y-1 ${
+                  a.earned
+                    ? "border-primary/40 bg-primary/[0.06] achievement-glow"
+                    : "border-border bg-card opacity-70 hover:opacity-100"
                 }`}
               >
                 {!a.earned && a.progress > 0 && (
@@ -32,7 +34,7 @@ export default function AchievementsGrid({ achievements }: { achievements: Achie
                   />
                 )}
                 <div
-                  className={`w-9 h-9 rounded-lg flex items-center justify-center mb-2.5 ${
+                  className={`w-10 h-10 rounded-lg flex items-center justify-center mb-4 ${
                     a.earned ? "bg-primary/15 text-primary" : "bg-surface-secondary text-fg-muted"
                   }`}
                 >
