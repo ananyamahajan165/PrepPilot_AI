@@ -52,7 +52,7 @@ export default function DailyMission({
     <div className="grid sm:grid-cols-3 gap-6">
       {cards.map((card, i) => (
         <FadeIn key={card.key} delay={staggerDelay(i)}>
-          <div className="card-premium p-6 h-full flex flex-col items-center text-center">
+          <div className="card-premium h-full flex flex-col items-center text-center">
             <p className="text-xs font-semibold uppercase tracking-wide text-fg-secondary">{card.title}</p>
             <div className="relative mt-3">
               {card.ring}
@@ -71,7 +71,7 @@ export default function DailyMission({
       ))}
 
       <FadeIn delay={staggerDelay(2)}>
-        <div className="card-premium p-6 h-full flex flex-col items-center text-center justify-center">
+        <div className="card-premium h-full flex flex-col items-center text-center justify-center">
           <p className="text-xs font-semibold uppercase tracking-wide text-fg-secondary">Learning Streak</p>
           <div className="w-16 h-16 rounded-2xl bg-amber-400/10 flex items-center justify-center mt-3">
             <FlameIcon className="w-8 h-8 text-amber-400" />
