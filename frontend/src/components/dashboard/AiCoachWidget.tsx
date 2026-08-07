@@ -31,7 +31,7 @@ export default function AiCoachWidget({
 
   return (
     <FadeIn>
-      <div className="card-premium p-8">
+      <div className="card-premium">
         <div className="flex items-center gap-2 mb-5">
           <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
             <SparklesIcon className="w-4.5 h-4.5" />
