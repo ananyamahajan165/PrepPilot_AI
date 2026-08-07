@@ -60,7 +60,7 @@ export default function LearningCalendar({ timeline }: { timeline: TimelinePoint
 
   return (
     <FadeIn>
-      <div className="card-premium p-6">
+      <div className="card-premium">
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div>
             <p className="text-sm font-semibold text-fg">Learning calendar</p>
