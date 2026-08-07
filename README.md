@@ -140,13 +140,16 @@ DELETE /api/profile                (protected, requires password, cascades data 
 Have a MongoDB instance running locally (or use MongoDB Atlas) and grab its
 connection string.
 
-### 2. Gemini API Key
-Get a free key at https://aistudio.google.com/app/apikey
+### 2. Gemini API Keys
+Get keys at https://aistudio.google.com/app/apikey. You can use one key, but
+adding 2-3 keys as `GEMINI_API_KEY_1`, `GEMINI_API_KEY_2`, and
+`GEMINI_API_KEY_3` lets the backend rotate/fail over when one key hits quota.
 
 ### 3. Environment variables
 ```bash
 cp backend/.env.example backend/.env
-# fill in MONGODB_URI, JWT_SECRET, REFRESH_TOKEN_SECRET, GEMINI_API_KEY
+# fill in MONGODB_URI, JWT_SECRET, REFRESH_TOKEN_SECRET, GEMINI_API_KEY_1
+# optionally add GEMINI_API_KEY_2 and GEMINI_API_KEY_3
 
 cp frontend/.env.example frontend/.env
 ```

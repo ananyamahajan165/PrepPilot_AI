@@ -17,7 +17,10 @@ by `.gitignore`.
 | `REFRESH_TOKEN_SECRET` | **Yes** | a long random string, **different from `JWT_SECRET`** | Signs long-lived **refresh tokens**, delivered only via an httpOnly cookie. Using a separate secret means a leaked access token alone can never be used to mint new sessions. |
 | `REFRESH_TOKEN_EXPIRES_IN_SHORT` | No (defaults to `1d`) | `1d` | Refresh token lifetime when "remember me" is **off**. |
 | `REFRESH_TOKEN_EXPIRES_IN_LONG` | No (defaults to `30d`) | `30d` | Refresh token lifetime when "remember me" is **on**. |
-| `GEMINI_API_KEY` | **Yes** | from https://aistudio.google.com/app/apikey | Powers every AI feature (Communication Coach, Interview Practice question generation and scoring, Resume Analyzer). Server-side only — never sent to the frontend. |
+| `GEMINI_API_KEY_1` | **Yes** | from https://aistudio.google.com/app/apikey | First Gemini API key. Powers every AI feature. Server-side only — never sent to the frontend. |
+| `GEMINI_API_KEY_2` through `GEMINI_API_KEY_5` | No | from https://aistudio.google.com/app/apikey | Extra Gemini keys for rotation/failover. Add 2-3 keys here to spread usage and reduce quota exhaustion. |
+| `GEMINI_API_KEYS` | No | `key_1,key_2,key_3` | Optional comma-separated alternative for deployment dashboards. Duplicate keys are ignored. |
+| `GEMINI_API_KEY` | No | from https://aistudio.google.com/app/apikey | Legacy single-key name. Still supported as key 1 so older `.env` files keep working. |
 
 ## Frontend (`frontend/.env`)
 

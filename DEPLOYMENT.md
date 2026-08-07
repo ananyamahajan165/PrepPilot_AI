@@ -47,7 +47,9 @@ source control.
    - `MONGODB_URI` — your Atlas connection string from step 1
    - `JWT_SECRET` and `REFRESH_TOKEN_SECRET` — generate two long, random,
      **different** values (e.g. `openssl rand -hex 32` twice)
-   - `GEMINI_API_KEY` — from step 2
+   - `GEMINI_API_KEY_1` — from step 2
+   - `GEMINI_API_KEY_2` and `GEMINI_API_KEY_3` — optional extra Gemini keys
+     for rotation/failover
    - `CLIENT_URL` — leave as `http://localhost:5173` for now; you'll update
      this after the frontend is deployed (step 4)
    - `NODE_ENV=production` — this matters: it makes the refresh-token cookie
@@ -99,7 +101,7 @@ the `Path`/origin the refresh-token cookie is scoped against.
 - [ ] Open browser dev tools → Network tab → confirm the `refreshToken`
       cookie has `Secure` and `SameSite=None` set (only true if
       `NODE_ENV=production` was set on the backend).
-- [ ] Confirm `GEMINI_API_KEY` and both JWT secrets are **not** visible
+- [ ] Confirm your Gemini API keys and both JWT secrets are **not** visible
       anywhere in the frontend's built JavaScript (they shouldn't be —
       they're backend-only — but it's worth a sanity check).
 
