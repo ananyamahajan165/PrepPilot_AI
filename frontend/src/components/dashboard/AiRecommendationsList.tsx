@@ -100,7 +100,7 @@ export default function AiRecommendationsList({
   const cards = [primaryCard, ...buildGapCards(totalResumeReports, categoryPerformance, recommendation.module)];
 
   return (
-    <div className="card-premium p-6 h-full">
+    <div className="card-premium h-full">
       <p className="text-sm font-semibold text-fg mb-1">AI Recommendations</p>
       <p className="text-xs text-fg-secondary mb-4">What to do next, ranked by what will help most</p>
 
