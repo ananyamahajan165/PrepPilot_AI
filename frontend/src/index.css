@@ -19,12 +19,19 @@
      as "premium product" rather than a flat CRUD table. Used by the new
      Score Overview, Skill Radar, Learning Calendar, and Motivation cards. */
   .card-premium {
-    @apply relative rounded-2xl border border-border bg-gradient-to-br from-card to-background overflow-hidden transition-all duration-300;
+    @apply relative rounded-[20px] border border-border bg-gradient-to-br from-card to-background overflow-hidden p-8 transition-all duration-300;
   }
   .card-premium:hover {
-    transform: translateY(-2px);
+    transform: translateY(-3px);
     border-color: rgba(var(--primary-rgb), 0.4);
-    box-shadow: 0 12px 32px -12px rgba(var(--primary-rgb), 0.18);
+    box-shadow: 0 16px 40px -14px rgba(var(--primary-rgb), 0.2);
+  }
+
+  /* Earned achievement cards get a glow on hover; locked ones deliberately
+     don't (see the opacity-based dim treatment in AchievementsGrid.tsx). */
+  .achievement-glow:hover {
+    border-color: rgba(var(--primary-rgb), 0.6);
+    box-shadow: 0 16px 40px -14px rgba(var(--primary-rgb), 0.25);
   }
 }
 
@@ -35,7 +42,7 @@
    app (Dashboard, Communication Coach, Interview, Resume,
    Profile, History, Auth). Components consume these via the
    Tailwind tokens defined in tailwind.config.js (bg-background,
-   bg-card, text-fg, border-border, bg-primary, ...) — never via
+   bg-card, text-fg, border-border, bg-primary, ...) â€” never via
    raw slate/gray/white/black classes. Flipping the `dark` class
    on <html> (done by ThemeContext) swaps every value below at
    once, so the whole app switches theme consistently with no
@@ -45,7 +52,7 @@
   --background: #f8fafc;
   --surface: #ffffff;
   --surface-secondary: #f1f5f9;
-  --surface-2: #f1f5f9; /* alias — same tier as surface-secondary, named to match the requested token list */
+  --surface-2: #f1f5f9; /* alias â€” same tier as surface-secondary, named to match the requested token list */
   --card: #ffffff;
   --card-hover: #f1f5f9;
   --border: rgba(17, 24, 39, 0.08);
@@ -102,7 +109,7 @@ html {
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
 }
 
-/* Default page background/text for every authenticated page — comes for
+/* Default page background/text for every authenticated page â€” comes for
    free everywhere Layout is used, and prevents any white/black flash
    while a page's own content is still loading. */
 body {
@@ -112,7 +119,7 @@ body {
 }
 
 /* Every themed surface (cards, panels, inputs, buttons) also gets a smooth
-   250ms cross-fade on theme change, not just the page background — without
+   250ms cross-fade on theme change, not just the page background â€” without
    this, only <body> would animate and every card/border would still snap
    instantly, breaking the "smooth theme switch" requirement. */
 *,
@@ -123,7 +130,7 @@ body {
   transition-timing-function: ease;
 }
 
-/* Respect OS-level "reduce motion" — disables the ambient/looping
+/* Respect OS-level "reduce motion" â€” disables the ambient/looping
    animations used on the landing page (waveform drift, floating card)
    without breaking layout. */
 @media (prefers-reduced-motion: reduce) {
