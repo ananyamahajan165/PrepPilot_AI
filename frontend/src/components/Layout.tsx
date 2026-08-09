@@ -10,7 +10,7 @@ export default function Layout({ children, wide = false }: { children: ReactNode
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
-      <main className={`${wide ? "max-w-[1600px] px-10 lg:px-12 pt-8 lg:pt-10 pb-10" : "max-w-5xl px-6 py-8"} mx-auto text-fg`}>{children}</main>
+      <main className={`${wide ? "max-w-[1500px] px-12 pt-12 pb-16" : "max-w-5xl px-6 py-8"} mx-auto text-fg`}>{children}</main>
     </div>
   );
 }
