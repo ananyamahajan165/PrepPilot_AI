@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import { FadeIn } from "../ui/motion";
 
 interface TimelinePoint {
@@ -7,14 +7,33 @@ interface TimelinePoint {
   activityCount: number;
 }
 
+interface HoverInfo {
+  day: TimelinePoint;
+  x: number; // px, relative to the grid's own positioning container
+  y: number;
+}
+
 const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
 const MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-/** Section 10 — GitHub-style contribution heatmap. Groups the year-long
- * `timeline` (see dashboardController's TIMELINE_DAYS) into weeks/columns,
- * Sunday-first, matching the familiar contribution-graph layout. */
+// Cell sizing lives here as real constants (not hardcoded pixel guesses
+// scattered through JSX) so month-label positions are always computed from
+// the same numbers the cells actually use — the previous version hardcoded
+// `weekIndex * 14` separately from a 10px cell, which silently drifted out
+// of sync the moment cell size changed.
+const CELL_SIZE = 14; // px — up from 10px so cells read clearly at full width
+const CELL_GAP = 4; // px
+const WEEK_PITCH = CELL_SIZE + CELL_GAP;
+const DAY_LABEL_COL_WIDTH = 28; // px, reserved for Mon/Wed/Fri labels
+
+/** Learning Calendar — full-width GitHub-style contribution heatmap. This
+ * needs real horizontal room (53 weeks × ~18px ≈ 950px+) to stay readable,
+ * so it's rendered as its own full-width row in Dashboard.tsx rather than
+ * squeezed into a side column next to Performance Overview — cramming a
+ * full year into a ~30% column is what made cells illegibly tiny before. */
 export default function LearningCalendar({ timeline }: { timeline: TimelinePoint[] }) {
-  const [hovered, setHovered] = useState<TimelinePoint | null>(null);
+  const [hover, setHover] = useState<HoverInfo | null>(null);
+  const gridWrapRef = useRef<HTMLDivElement>(null);
 
   const { weeks, monthMarkers, maxActivity, totalActive } = useMemo(() => {
     if (timeline.length === 0) return { weeks: [], monthMarkers: [], maxActivity: 1, totalActive: 0 };
@@ -58,20 +77,30 @@ export default function LearningCalendar({ timeline }: { timeline: TimelinePoint
     return count === 0 ? "var(--border)" : "var(--primary)";
   }
 
+  function handleEnter(day: TimelinePoint, weekIndex: number, dayIndex: number) {
+    // Position the tooltip directly above the hovered cell, in coordinates
+    // relative to the grid wrapper (not the viewport) — keeps it correctly
+    // placed regardless of page scroll, and clamped so it can't render
+    // outside the card on the first/last columns.
+    const x = DAY_LABEL_COL_WIDTH + weekIndex * WEEK_PITCH + CELL_SIZE / 2;
+    const y = dayIndex * WEEK_PITCH;
+    setHover({ day, x, y });
+  }
+
   return (
     <FadeIn>
       <div className="card-premium">
-        <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <div>
             <p className="text-sm font-semibold text-fg">Learning calendar</p>
-            <p className="text-xs text-fg-secondary mt-0.5">{totalActive} active days in the last year</p>
+            <p className="text-xs text-fg-secondary mt-1">{totalActive} active days in the last year</p>
           </div>
-          <div className="flex items-center gap-1.5 text-[10px] text-fg-muted">
+          <div className="flex items-center gap-2 text-[11px] text-fg-muted">
             <span>Less</span>
             {[0, 0.28, 0.5, 0.75, 1].map((v) => (
               <span
                 key={v}
-                className="w-2.5 h-2.5 rounded-sm"
+                className="w-3 h-3 rounded-sm"
                 style={{ backgroundColor: v === 0 ? "var(--border)" : "var(--primary)", opacity: v === 0 ? 1 : v }}
               />
             ))}
@@ -79,55 +108,84 @@ export default function LearningCalendar({ timeline }: { timeline: TimelinePoint
           </div>
         </div>
 
-        <div className="overflow-x-auto pb-1">
-          <div className="inline-flex flex-col gap-1 min-w-full">
-            <div className="flex gap-1 pl-6 relative h-3">
+        <div className="overflow-x-auto">
+          <div ref={gridWrapRef} className="relative inline-block min-w-full pb-1">
+            {/* Month labels — positions computed from the same WEEK_PITCH the
+                cells use, so they can never drift out of alignment. */}
+            <div className="relative h-4" style={{ marginLeft: DAY_LABEL_COL_WIDTH }}>
               {monthMarkers.map((m) => (
                 <span
                   key={`${m.label}-${m.weekIndex}`}
-                  className="absolute text-[10px] text-fg-muted"
-                  style={{ left: `${m.weekIndex * 14}px` }}
+                  className="absolute text-xs text-fg-muted"
+                  style={{ left: `${m.weekIndex * WEEK_PITCH}px` }}
                 >
                   {m.label}
                 </span>
               ))}
             </div>
-            <div className="flex gap-1">
-              <div className="flex flex-col gap-1 pr-1 pt-0.5">
+
+            <div className="flex mt-2" style={{ gap: CELL_GAP }}>
+              <div className="flex flex-col shrink-0" style={{ gap: CELL_GAP, width: DAY_LABEL_COL_WIDTH }}>
                 {DAY_LABELS.map((d, i) => (
-                  <span key={i} className="text-[9px] text-fg-muted h-2.5 leading-[10px]">
+                  <span
+                    key={i}
+                    className="text-[11px] text-fg-muted leading-none flex items-center"
+                    style={{ height: CELL_SIZE }}
+                  >
                     {d}
                   </span>
                 ))}
               </div>
+
               {weeks.map((week, wi) => (
-                <div key={wi} className="flex flex-col gap-1">
+                <div key={wi} className="flex flex-col" style={{ gap: CELL_GAP }}>
                   {week.map((day, di) =>
                     day ? (
                       <div
                         key={di}
-                        className="w-2.5 h-2.5 rounded-sm cursor-pointer transition-transform hover:scale-125"
-                        style={{ backgroundColor: levelBackground(day.activityCount), opacity: levelOpacity(day.activityCount) }}
-                        onMouseEnter={() => setHovered(day)}
-                        onMouseLeave={() => setHovered(null)}
+                        className="rounded-[3px] cursor-pointer transition-transform duration-150 hover:scale-125"
+                        style={{
+                          width: CELL_SIZE,
+                          height: CELL_SIZE,
+                          backgroundColor: levelBackground(day.activityCount),
+                          opacity: levelOpacity(day.activityCount),
+                        }}
+                        onMouseEnter={() => handleEnter(day, wi, di)}
+                        onMouseLeave={() => setHover(null)}
                       />
                     ) : (
-                      <div key={di} className="w-2.5 h-2.5" />
+                      <div key={di} style={{ width: CELL_SIZE, height: CELL_SIZE }} />
                     )
                   )}
                 </div>
               ))}
             </div>
+
+            {/* Floating tooltip — positioned relative to the grid wrapper
+                above, clamped horizontally so it can't render outside the
+                card on the far-left/right edges of the grid. */}
+            {hover && (
+              <div
+                className="absolute z-10 -translate-x-1/2 -translate-y-full -mt-2 rounded-lg border border-border bg-surface px-3 py-2 text-xs text-fg shadow-lg pointer-events-none whitespace-nowrap"
+                style={{
+                  left: `clamp(60px, ${hover.x}px, calc(100% - 60px))`,
+                  top: hover.y,
+                }}
+              >
+                <p className="font-medium">
+                  {new Date(hover.day.date + "T00:00:00").toLocaleDateString(undefined, {
+                    month: "long",
+                    day: "numeric",
+                    year: "numeric",
+                  })}
+                </p>
+                <p className="text-fg-secondary mt-0.5">
+                  {hover.day.activityCount} session{hover.day.activityCount === 1 ? "" : "s"}
+                </p>
+              </div>
+            )}
           </div>
         </div>
-
-        <p className="text-xs text-fg-secondary mt-3 h-4">
-          {hovered
-            ? `${hovered.activityCount} session${hovered.activityCount === 1 ? "" : "s"} on ${new Date(
-                hovered.date + "T00:00:00"
-              ).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}`
-            : "Hover a square to see that day's activity"}
-        </p>
       </div>
     </FadeIn>
   );
