@@ -34,11 +34,25 @@ function MailIcon({ className = "w-4 h-4" }: IconProps) {
   );
 }
 
+// =============================================================================
+// EDIT THESE: replace every "REPLACE_WITH_..." placeholder below with your
+// real profile URLs. Nothing here was invented as a real link — these are
+// intentionally obvious placeholders so a stray guessed URL can never ship
+// by accident. Portfolio is optional; leave it as-is to hide that link.
+// =============================================================================
+const DEVELOPER_PROFILE = {
+  name: "Ananya Mahajan",
+  githubUrl: "REPLACE_WITH_YOUR_GITHUB_URL", // e.g. "https://github.com/your-username"
+  linkedinUrl: "REPLACE_WITH_YOUR_LINKEDIN_URL", // e.g. "https://linkedin.com/in/your-handle"
+  portfolioUrl: "", // optional — e.g. "https://yourportfolio.com"; leave blank to hide
+  email: "REPLACE_WITH_YOUR_EMAIL", // e.g. "you@example.com"
+};
+
 const CONNECT_LINKS = [
-  { label: "GitHub", href: "https://github.com/ananyamahajan165", icon: GitHubIcon },
-  { label: "LinkedIn", href: "https://linkedin.com/in/ananyamahajan", icon: LinkedInIcon },
-  { label: "Portfolio", href: "#", icon: PortfolioIcon },
-  { label: "Email", href: "mailto:ananyam054@gmail.com", icon: MailIcon },
+  { label: "GitHub", href: DEVELOPER_PROFILE.githubUrl, icon: GitHubIcon },
+  { label: "LinkedIn", href: DEVELOPER_PROFILE.linkedinUrl, icon: LinkedInIcon },
+  ...(DEVELOPER_PROFILE.portfolioUrl ? [{ label: "Portfolio", href: DEVELOPER_PROFILE.portfolioUrl, icon: PortfolioIcon }] : []),
+  { label: "Email", href: `mailto:${DEVELOPER_PROFILE.email}`, icon: MailIcon },
 ];
 
 const TECH_STACK = ["React", "TypeScript", "Tailwind CSS", "Node.js", "Express", "MongoDB", "Gemini AI"];
@@ -62,7 +76,7 @@ export default function DashboardFooter() {
             <p className="font-display text-lg text-fg">
               Verba<span className="text-primary italic">AI</span>
             </p>
-            <p className="text-sm text-fg mt-4 font-medium">Ananya Mahajan</p>
+            <p className="text-sm text-fg mt-4 font-medium">{DEVELOPER_PROFILE.name}</p>
             <p className="text-xs text-fg-secondary mt-1">Full Stack Developer</p>
             <p className="text-xs text-fg-secondary">AI Enthusiast</p>
           </div>
@@ -118,7 +132,7 @@ export default function DashboardFooter() {
         </div>
 
         <div className="border-t border-border mt-12 pt-8 pb-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
-          <p>Designed &amp; Developed by Ananya Mahajan</p>
+          <p>Designed &amp; Developed by {DEVELOPER_PROFILE.name}</p>
           <p>
             VerbaAI v1.0 &middot; &copy; {year} All Rights Reserved
           </p>
