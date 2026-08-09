@@ -111,7 +111,7 @@ export default function ScoreOverviewGrid({
           const previousScore = Math.max(card.value - card.trend, 0);
           return (
             <FadeIn key={card.label} delay={staggerDelay(i)}>
-              <div className="card-premium p-6 h-full">
+              <div className="card-premium h-full">
                 <div
                   className="absolute -top-10 -right-10 w-28 h-28 rounded-full blur-2xl pointer-events-none"
                   style={{ backgroundColor: card.glowColor }}
