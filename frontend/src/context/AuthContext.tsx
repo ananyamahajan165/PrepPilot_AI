@@ -1,4 +1,4 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { createContext, useContext, useEffect, useRef, useState, ReactNode } from "react";
 import api, { setAccessToken } from "../lib/api";
 
 interface User {
@@ -24,6 +24,17 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  // React 18 StrictMode intentionally mounts every effect twice in
+  // development (mount -> cleanup -> mount again) to surface bugs. Without
+  // this guard, restoreSession() below would fire twice on every page
+  // load: the first /auth/refresh call succeeds and rotates the refresh
+  // cookie (this backend correctly rotates tokens on every refresh), so
+  // the second call is immediately using an already-revoked cookie and
+  // gets a 401 — which then overwrites the first call's successful
+  // setUser() with setUser(null), logging the user back out. This ref
+  // makes the real restore logic run exactly once per page load,
+  // regardless of how many times StrictMode invokes the effect.
+  const hasRestoredSession = useRef(false);
 
   useEffect(() => {
     const publicPaths = ["/", "/login", "/signup"];
@@ -51,7 +62,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setLoading(false);
       }
     }
-    restoreSession();
+
+    if (!hasRestoredSession.current) {
+      hasRestoredSession.current = true;
+      restoreSession();
+    }
 
     // Fired by lib/api.ts when a background token refresh fails (e.g. the
     // refresh token expired or was revoked from another tab) — drop the
