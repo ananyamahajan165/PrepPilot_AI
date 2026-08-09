@@ -3,6 +3,7 @@ import Layout from "../components/Layout";
 import DashboardSkeleton from "../components/dashboard/Skeleton";
 import EmptyStateBanner from "../components/dashboard/EmptyStateBanner";
 import HeroSection from "../components/dashboard/HeroSection";
+import TodaysAiInsight from "../components/dashboard/TodayAiInsight";
 import DailyMission from "../components/dashboard/DailyMission";
 import LearningJourney from "../components/dashboard/LearningJourney";
 import PerformanceOverview from "../components/dashboard/PerformanceOverview";
@@ -16,6 +17,7 @@ import MotivationalQuote from "../components/dashboard/MotivationalQuote";
 import AiRecommendationsList from "../components/dashboard/AiRecommendationsList";
 import AiCoachWidget from "../components/dashboard/AiCoachWidget";
 import FooterStats from "../components/dashboard/FooterStats";
+import DashboardFooter from "../components/dashboard/DashboardFooter";
 import { useAuth } from "../context/AuthContext";
 import api from "../lib/api";
 
@@ -113,19 +115,22 @@ export default function Dashboard() {
 
   return (
     <Layout wide>
-      <div className="space-y-10">
-        {/* Section 1 — Hero */}
+      <div className="space-y-16">
+        {/* Section 1 — Welcome Hero (standalone) */}
         <HeroSection
           firstName={firstName}
           avatarUrl={user?.avatarUrl || ""}
           levelLabel={data.learningStage.label}
           hasActivity={data.hasActivity}
-          aiInsights={data.aiInsights}
         />
+
+        {/* Section 2 — Today's AI Insight (deliberately its own section, not
+            sharing a row with the Hero — see both components' comments) */}
+        <TodaysAiInsight aiInsights={data.aiInsights} />
 
         {!data.hasActivity && <EmptyStateBanner name={firstName} />}
 
-        {/* Section 2 — AI Overview */}
+        {/* Section 3 — AI Overview */}
         <ScoreOverviewGrid
           communicationScore={communicationScore}
           interviewScore={interviewScore}
@@ -137,21 +142,19 @@ export default function Dashboard() {
           timeline={data.timeline}
         />
 
-        {/* Section 3 — Weekly progress (left) + Activity heatmap (right) */}
-        <div className="grid lg:grid-cols-12 gap-8 items-stretch">
-          <div className="lg:col-span-7">
-            <PerformanceOverview
-              timeline={data.timeline}
-              confidenceTrend={comm.confidenceTrend}
-              vocabularyGrowth={comm.vocabularyGrowth}
-              grammarImprovement={comm.grammarImprovement}
-              speakingTimeSeconds={comm.speakingTimeSeconds}
-            />
-          </div>
-          <div className="lg:col-span-5">
-            <LearningCalendar timeline={data.timeline} />
-          </div>
-        </div>
+        {/* Section 3 — Performance Overview (full width) */}
+        <PerformanceOverview
+          timeline={data.timeline}
+          confidenceTrend={comm.confidenceTrend}
+          vocabularyGrowth={comm.vocabularyGrowth}
+          grammarImprovement={comm.grammarImprovement}
+          speakingTimeSeconds={comm.speakingTimeSeconds}
+        />
+
+        {/* Section 3b — Learning Calendar, also full width: a full year
+            (53 weeks) genuinely needs the horizontal room — squeezing it
+            into a ~30% side column made the cells illegibly tiny. */}
+        <LearningCalendar timeline={data.timeline} />
 
         {/* Section 4 — Today's Goal / Weekly Goal / Learning Streak */}
         <DailyMission dailyGoal={data.dailyGoal} weeklyGoal={data.weeklyGoal} streak={data.streak} />
@@ -159,11 +162,11 @@ export default function Dashboard() {
         <LearningJourney stages={data.learningStage.stages} currentIndex={data.learningStage.index} />
 
         {/* Section 5 — Skill Radar (left) + AI Recommendations (right) */}
-        <div className="grid lg:grid-cols-12 gap-8 items-stretch">
-          <div className="lg:col-span-5">
+        <div className="grid lg:grid-cols-2 gap-6 items-start">
+          <div>
             <SkillRadarChart scores={comm.averageScores} technicalScore={data.averageTechnicalScore} />
           </div>
-          <div className="lg:col-span-7">
+          <div>
             <AiRecommendationsList
               recommendation={data.recommendedPractice}
               totalResumeReports={data.totalResumeReports}
@@ -200,6 +203,8 @@ export default function Dashboard() {
           totalWordsSpoken={data.totalWordsSpoken}
           averageAtsScore={data.averageAtsScore}
         />
+
+        <DashboardFooter />
       </div>
     </Layout>
   );
