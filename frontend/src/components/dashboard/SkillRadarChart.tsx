@@ -27,9 +27,9 @@ const AXES: Axis[] = [
   { key: "leadership", label: "Leadership", tracked: false },
 ];
 
-const SIZE = 300;
+const SIZE = 340;
 const CENTER = SIZE / 2;
-const MAX_RADIUS = 105;
+const MAX_RADIUS = 120;
 const RINGS = [0.25, 0.5, 0.75, 1];
 const COMING_SOON_RADIUS_FRACTION = 0.12; // small dot near center, not a real score
 
@@ -66,7 +66,7 @@ export default function SkillRadarChart({
 
   return (
     <FadeIn>
-      <div className="card-premium p-6 h-full">
+      <div className="card-premium h-full">
         <p className="text-sm font-semibold text-fg mb-1">Skill Radar</p>
         <p className="text-xs text-fg-secondary mb-4">Your profile across every dimension we coach</p>
 
@@ -76,7 +76,7 @@ export default function SkillRadarChart({
           </div>
         ) : (
           <div className="flex flex-col items-center">
-            <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full max-w-[300px]">
+            <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="w-full max-w-[340px] mx-auto">
               {RINGS.map((r) => (
                 <polygon
                   key={r}
