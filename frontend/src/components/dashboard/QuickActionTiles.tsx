@@ -32,17 +32,17 @@ export default function QuickActionTiles() {
           <FadeIn key={action.to} delay={staggerDelay(i)}>
             <Link
               to={action.to}
-              className="group h-full flex flex-col justify-between gap-6 rounded-2xl border border-border bg-card p-6 hover:border-primary/50 hover:-translate-y-0.5 transition-all"
+              className="card-premium group h-full flex flex-col justify-between gap-6 block"
             >
-              <div className="w-10 h-10 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 transition-colors">
-                <action.icon className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center group-hover:bg-primary/20 group-hover:scale-105 transition-all duration-300">
+                <action.icon className="w-5.5 h-5.5" />
               </div>
               <div>
                 <p className="text-sm font-semibold text-fg flex items-center gap-1.5">
                   {action.label}
-                  <ArrowRightIcon className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <ArrowRightIcon className="w-3.5 h-3.5 opacity-0 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all duration-300" />
                 </p>
-                <p className="text-xs text-fg-secondary mt-1">{action.desc}</p>
+                <p className="text-xs text-fg-secondary mt-1.5">{action.desc}</p>
               </div>
             </Link>
           </FadeIn>
