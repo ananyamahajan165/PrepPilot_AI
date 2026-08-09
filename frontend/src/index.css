@@ -33,6 +33,13 @@
     border-color: rgba(var(--primary-rgb), 0.6);
     box-shadow: 0 16px 40px -14px rgba(var(--primary-rgb), 0.25);
   }
+
+  .hero-insight-card {
+    transition: box-shadow 0.3s ease;
+  }
+  .hero-insight-card:hover {
+    box-shadow: 0 16px 40px -14px rgba(var(--primary-rgb), 0.2);
+  }
 }
 
 /* ===========================================================
