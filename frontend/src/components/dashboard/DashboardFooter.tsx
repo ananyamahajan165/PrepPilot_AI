@@ -39,6 +39,8 @@ function MailIcon({ className = "w-4 h-4" }: IconProps) {
 // real profile URLs. Nothing here was invented as a real link — these are
 // intentionally obvious placeholders so a stray guessed URL can never ship
 // by accident. Portfolio is optional; leave it as-is to hide that link.
+// This is the single source for these values — DashboardFooter is the only
+// place they're defined, so there's nothing else to keep in sync.
 // =============================================================================
 const DEVELOPER_PROFILE = {
   name: "Ananya Mahajan",
@@ -57,7 +59,7 @@ const CONNECT_LINKS = [
 
 const TECH_STACK = ["React", "TypeScript", "Tailwind CSS", "Node.js", "Express", "MongoDB", "Gemini AI"];
 
-const QUICK_LINKS = [
+const PRODUCT_LINKS = [
   { label: "Dashboard", to: "/dashboard" },
   { label: "Communication Coach", to: "/communication-coach" },
   { label: "Interview Practice", to: "/interview" },
@@ -65,32 +67,52 @@ const QUICK_LINKS = [
   { label: "Profile", to: "/profile" },
 ];
 
+/** Professional product footer — 3 columns (Brand, Product, Connect), with
+ * the tech stack folded into one subtle line rather than a badge grid, and
+ * a compact copyright row. Tightened to sit close to the AI insight and
+ * statistics above it rather than floating in its own huge empty region. */
 export default function DashboardFooter() {
   const year = new Date().getFullYear();
 
   return (
     <FadeIn>
-      <footer className="border-t border-border pt-12">
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-10">
+      <footer className="border-t border-border pt-12 pb-2">
+        <div className="grid sm:grid-cols-3 gap-12">
           <div>
-            <p className="font-display text-lg text-fg">
+            <p className="font-display text-xl text-fg">
               Verba<span className="text-primary italic">AI</span>
             </p>
-            <p className="text-sm text-fg mt-4 font-medium">{DEVELOPER_PROFILE.name}</p>
-            <p className="text-xs text-fg-secondary mt-1">Full Stack Developer</p>
-            <p className="text-xs text-fg-secondary">AI Enthusiast</p>
+            <p className="text-sm text-fg-secondary mt-3 max-w-xs leading-relaxed">
+              AI-powered interview and communication coaching.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wide text-fg-muted mb-4">Product</p>
+            <ul className="space-y-2.5">
+              {PRODUCT_LINKS.map((link) => (
+                <li key={link.to}>
+                  <Link
+                    to={link.to}
+                    className="text-sm text-fg-secondary hover:text-primary transition-colors duration-200 inline-block"
+                  >
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
           </div>
 
           <div>
             <p className="text-xs font-semibold uppercase tracking-wide text-fg-muted mb-4">Connect</p>
-            <ul className="space-y-3">
+            <ul className="space-y-2.5">
               {CONNECT_LINKS.map((link) => (
                 <li key={link.label}>
                   <a
                     href={link.href}
                     target={link.href.startsWith("http") ? "_blank" : undefined}
                     rel="noreferrer"
-                    className="inline-flex items-center gap-2 text-sm text-fg-secondary hover:text-primary transition-colors hover:translate-x-0.5 duration-200"
+                    className="inline-flex items-center gap-2 text-sm text-fg-secondary hover:text-primary transition-colors duration-200"
                   >
                     <link.icon className="w-4 h-4" />
                     {link.label}
@@ -99,43 +121,15 @@ export default function DashboardFooter() {
               ))}
             </ul>
           </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-fg-muted mb-4">Tech Stack</p>
-            <div className="flex flex-wrap gap-2">
-              {TECH_STACK.map((tech) => (
-                <span
-                  key={tech}
-                  className="text-xs font-medium text-fg-secondary bg-surface-secondary border border-border rounded-full px-3 py-1 hover:border-primary/40 hover:text-fg transition-colors"
-                >
-                  {tech}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-wide text-fg-muted mb-4">Quick Links</p>
-            <ul className="space-y-3">
-              {QUICK_LINKS.map((link) => (
-                <li key={link.to}>
-                  <Link
-                    to={link.to}
-                    className="text-sm text-fg-secondary hover:text-primary transition-colors hover:translate-x-0.5 duration-200 inline-block"
-                  >
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
         </div>
 
-        <div className="border-t border-border mt-12 pt-8 pb-4 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-fg-muted">
-          <p>Designed &amp; Developed by {DEVELOPER_PROFILE.name}</p>
-          <p>
-            VerbaAI v1.0 &middot; &copy; {year} All Rights Reserved
-          </p>
+        <p className="text-xs text-fg-muted mt-10">
+          Built with {TECH_STACK.join(" \u00b7 ")}
+        </p>
+
+        <div className="border-t border-border mt-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-fg-muted">
+          <p>&copy; {year} VerbaAI. All rights reserved.</p>
+          <p>Built by {DEVELOPER_PROFILE.name}</p>
         </div>
       </footer>
     </FadeIn>
