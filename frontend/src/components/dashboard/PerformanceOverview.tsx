@@ -72,8 +72,8 @@ export default function PerformanceOverview({
   if (current.length) segments.push(current);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
-      <div className="flex items-center justify-between mb-5">
+    <div className="card-premium">
+      <div className="flex items-center justify-between mb-6">
         <p className="text-sm font-semibold text-fg">Performance overview</p>
         <span className="text-xs text-fg-muted">Last 14 days</span>
       </div>
@@ -105,11 +105,16 @@ export default function PerformanceOverview({
       ) : (
         <div className="border-t border-border pt-5">
           <p className="text-xs text-fg-secondary mb-2">Interview score trend</p>
-          <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full h-32" preserveAspectRatio="none">
-            <line x1={PADDING} y1={scoreToY(100)} x2={CHART_WIDTH - PADDING} y2={scoreToY(100)} stroke="var(--border)" strokeWidth="1" />
-            <line x1={PADDING} y1={scoreToY(50)} x2={CHART_WIDTH - PADDING} y2={scoreToY(50)} stroke="var(--border)" strokeWidth="1" />
-            {hasAnyScore &&
-              segments.map((seg, i) => (
+          {!hasAnyScore ? (
+            <div className="h-32 flex flex-col items-center justify-center text-center rounded-lg bg-surface-secondary">
+              <p className="text-sm text-fg-secondary">Not enough interview history yet</p>
+              <p className="text-xs text-fg-muted mt-1">Complete a few interview sessions to see your progress trend.</p>
+            </div>
+          ) : (
+            <svg viewBox={`0 0 ${CHART_WIDTH} ${CHART_HEIGHT}`} className="w-full h-32" preserveAspectRatio="none">
+              <line x1={PADDING} y1={scoreToY(100)} x2={CHART_WIDTH - PADDING} y2={scoreToY(100)} stroke="var(--border)" strokeWidth="1" />
+              <line x1={PADDING} y1={scoreToY(50)} x2={CHART_WIDTH - PADDING} y2={scoreToY(50)} stroke="var(--border)" strokeWidth="1" />
+              {segments.map((seg, i) => (
                 <polyline
                   key={i}
                   points={seg.map((p) => `${p.x},${p.y}`).join(" ")}
@@ -120,9 +125,11 @@ export default function PerformanceOverview({
                   strokeLinejoin="round"
                 />
               ))}
-            {hasAnyScore &&
-              segments.flat().map((p) => <circle key={`${p.x}-${p.y}`} cx={p.x} cy={p.y} r="3" fill="var(--primary)" />)}
-          </svg>
+              {segments.flat().map((p) => (
+                <circle key={`${p.x}-${p.y}`} cx={p.x} cy={p.y} r="3" fill="var(--primary)" />
+              ))}
+            </svg>
+          )}
 
           <p className="text-xs text-fg-secondary mt-4 mb-2">Practice heatmap</p>
           <div className="flex items-end gap-1 h-8">
