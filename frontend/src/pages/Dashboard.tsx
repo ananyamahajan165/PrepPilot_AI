@@ -192,19 +192,25 @@ export default function Dashboard() {
           overallReadiness={overallReadiness}
         />
 
-        <MotivationalQuote />
+        {/* Bottom cluster — Quote, Stats, Footer are visually one closing
+            group, so they use a tighter internal rhythm (40px) than the
+            rest of the page (64px) rather than each floating in its own
+            huge gap. The 64px gap before this div (inherited from the
+            parent space-y-16) still separates it from AI Coach above. */}
+        <div className="space-y-10">
+          <MotivationalQuote />
 
-        {/* Section 10 — Footer stats */}
-        <FooterStats
-          totalInterviews={data.totalInterviews}
-          totalCommunicationSessions={data.totalCommunicationSessions}
-          totalResumeReports={data.totalResumeReports}
-          speakingTimeSeconds={comm.speakingTimeSeconds}
-          totalWordsSpoken={data.totalWordsSpoken}
-          averageAtsScore={data.averageAtsScore}
-        />
+          <FooterStats
+            totalInterviews={data.totalInterviews}
+            totalCommunicationSessions={data.totalCommunicationSessions}
+            totalResumeReports={data.totalResumeReports}
+            speakingTimeSeconds={comm.speakingTimeSeconds}
+            totalWordsSpoken={data.totalWordsSpoken}
+            averageAtsScore={data.averageAtsScore}
+          />
 
-        <DashboardFooter />
+          <DashboardFooter />
+        </div>
       </div>
     </Layout>
   );
