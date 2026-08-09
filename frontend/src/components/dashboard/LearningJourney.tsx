@@ -9,9 +9,9 @@ export default function LearningJourney({
 }) {
   return (
     <FadeIn>
-      <div className="rounded-2xl border border-border bg-card p-6">
+      <div className="card-premium">
         <p className="text-sm font-semibold text-fg mb-1">Your learning journey</p>
-        <p className="text-xs text-fg-secondary mb-6">{stages[currentIndex]} — keep going</p>
+        <p className="text-xs text-fg-secondary mb-8">{stages[currentIndex]} — keep going</p>
 
         <div className="flex items-center">
           {stages.map((stage, i) => {
@@ -28,6 +28,7 @@ export default function LearningJourney({
                         ? "border-primary text-primary bg-primary/10"
                         : "border-border text-fg-muted bg-background"
                     }`}
+                    style={isCurrent ? { boxShadow: "0 0 0 6px rgba(var(--primary-rgb), 0.15), 0 0 20px rgba(var(--primary-rgb), 0.35)" } : undefined}
                   >
                     {isCurrent && (
                       <span className="absolute inset-0 rounded-full bg-primary/30 animate-ping" aria-hidden="true" />
