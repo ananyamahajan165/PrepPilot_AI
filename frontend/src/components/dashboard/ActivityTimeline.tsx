@@ -31,8 +31,8 @@ function relativeDay(dateStr: string) {
 
 export default function ActivityTimeline({ items }: { items: ActivityItem[] }) {
   return (
-    <div className="rounded-2xl border border-border bg-card p-6">
-      <p className="text-sm font-semibold text-fg mb-5">Recent activity</p>
+    <div className="card-premium">
+      <p className="text-sm font-semibold text-fg mb-6">Recent activity</p>
 
       {items.length === 0 ? (
         <div className="text-center py-8">
@@ -49,20 +49,22 @@ export default function ActivityTimeline({ items }: { items: ActivityItem[] }) {
             const isLast = i === items.length - 1;
             return (
               <FadeIn key={item.id} delay={staggerDelay(i, 0.05)}>
-                <li className="relative pl-10 pb-6 last:pb-0">
+                <li className="relative pl-11 pb-7 last:pb-0 group">
                   {!isLast && <span className="absolute left-4 top-9 bottom-0 w-px bg-border" aria-hidden="true" />}
-                  <span className={`absolute left-0 top-0 w-8 h-8 rounded-full flex items-center justify-center ${meta.color}`}>
+                  <span
+                    className={`absolute left-0 top-0 w-8 h-8 rounded-full flex items-center justify-center transition-transform duration-300 group-hover:scale-110 ${meta.color}`}
+                  >
                     <Icon className="w-4 h-4" />
                   </span>
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex items-start justify-between gap-3 rounded-xl -mx-3 px-3 py-1.5 transition-colors duration-200 group-hover:bg-surface-secondary">
                     <div className="min-w-0">
-                      <p className="text-xs text-fg-muted">
-                        {relativeDay(item.createdAt)} · {meta.label}
+                      <p className="text-xs font-medium text-fg-muted">
+                        {relativeDay(item.createdAt)} &middot; {meta.label}
                       </p>
-                      <p className="text-sm text-fg-secondary mt-0.5 truncate">{item.title}</p>
+                      <p className="text-sm text-fg-secondary mt-1 truncate">{item.title}</p>
                     </div>
                     {item.score !== null && (
-                      <span className="shrink-0 text-sm font-semibold text-fg">{item.score}</span>
+                      <span className="shrink-0 text-base font-semibold text-fg">{item.score}</span>
                     )}
                   </div>
                 </li>
