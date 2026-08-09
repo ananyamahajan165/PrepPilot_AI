@@ -31,7 +31,7 @@ export default function MotivationalQuote() {
 
   return (
     <FadeIn>
-      <div className="card-premium p-6 text-center">
+      <div className="card-premium text-center">
         <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center mx-auto mb-3">
           <SparklesIcon className="w-4.5 h-4.5" />
         </div>
