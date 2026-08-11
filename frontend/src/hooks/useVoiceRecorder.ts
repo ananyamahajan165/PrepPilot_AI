@@ -1,8 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 
-// The Web Speech API (SpeechRecognition) isn't in TypeScript's standard DOM
-// lib across all environments, so we type it minimally ourselves rather
-// than pull in a full @types package for a handful of fields.
 interface SpeechRecognitionResultLike {
   isFinal: boolean;
   0: { transcript: string };
@@ -42,10 +39,7 @@ export function useVoiceRecorder() {
   const chunksRef = useRef<Blob[]>([]);
   const timerRef = useRef<number | null>(null);
   const finalTranscriptRef = useRef("");
-  // React state updates are async/batched, so reading `status` inside the
-  // SpeechRecognition `onend` callback would see a stale value from the
-  // render in which the recognition session was created. This ref is
-  // updated synchronously and is what onend actually checks.
+
   const isRecordingRef = useRef(false);
 
   const isSupported = typeof window !== "undefined" && !!getSpeechRecognitionCtor() && !!navigator.mediaDevices;
@@ -79,21 +73,18 @@ export function useVoiceRecorder() {
       setTranscript((finalTranscriptRef.current + interim).trim());
     };
     recognition.onerror = (event) => {
-      // "no-speech" fires constantly on silence in continuous mode — not a
-      // real error, so don't surface it to the user.
+
       if (event?.error && event.error !== "no-speech") {
         setMicError("Voice recognition had trouble hearing you. You can keep going or switch to text.");
       }
     };
     recognition.onend = () => {
-      // Some browsers end the recognition session on their own after a
-      // pause in speech even in "continuous" mode — silently restart it if
-      // we're still meant to be recording.
+
       if (isRecordingRef.current) {
         try {
           recognition.start();
         } catch {
-          /* already started / not restartable — ignore */
+
         }
       }
     };
@@ -172,13 +163,6 @@ export function useVoiceRecorder() {
     setStatus("idle");
   }, [audioUrl]);
 
-  // If the user navigates away (e.g. clicks another nav link) while still
-  // actively recording, nothing else would ever release the microphone,
-  // stop the SpeechRecognition session, or clear the timer — the mic
-  // indicator would stay lit and resources would leak for the rest of the
-  // browser session. This runs once on unmount, regardless of status, and
-  // tears everything down directly via the refs (not the callbacks above,
-  // since those are stale by the time an unmount cleanup fires).
   useEffect(() => {
     return () => {
       isRecordingRef.current = false;

@@ -2,15 +2,9 @@ import axios from "axios";
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_URL || "/api",
-  withCredentials: true, // send/receive the httpOnly refresh-token cookie
+  withCredentials: true,
 });
 
-// The access token lives ONLY in memory (a module-level variable), never in
-// localStorage/sessionStorage. This is deliberate: localStorage is readable
-// by any script on the page, so a single XSS bug would leak every user's
-// token. Keeping it in memory means a page reload loses it — which is fine,
-// because AuthContext calls /auth/refresh on startup to get a new one from
-// the httpOnly refresh cookie instead.
 let accessToken: string | null = null;
 
 export function setAccessToken(token: string | null) {
@@ -28,9 +22,6 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// If a request fails with 401 (expired access token), try exactly once to
-// silently refresh it using the httpOnly cookie, then replay the original
-// request. If the refresh itself fails, the session is truly over.
 let refreshPromise: Promise<string | null> | null = null;
 
 api.interceptors.response.use(
@@ -45,9 +36,6 @@ api.interceptors.response.use(
     }
     originalRequest._retry = true;
 
-    // Multiple requests can 401 at once (e.g. Dashboard fires several calls
-    // in parallel) — share a single in-flight refresh instead of firing one
-    // per failed request.
     if (!refreshPromise) {
       refreshPromise = api
         .post("/auth/refresh")
@@ -58,7 +46,7 @@ api.interceptors.response.use(
         })
         .catch(() => {
           setAccessToken(null);
-          window.dispatchEvent(new Event("verbaai:session-expired"));
+          window.dispatchEvent(new Event("preppilot-ai:session-expired"));
           return null;
         })
         .finally(() => {
