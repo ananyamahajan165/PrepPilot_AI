@@ -1,4 +1,4 @@
-# VerbaAI — AI Confidence & Communication Coach
+# PrepPilot AI — AI Confidence & Communication Coach
 
 A full MERN-stack placement-prep platform: students practice spoken and
 written communication, prepare for interviews, get instant AI-scored
@@ -49,7 +49,7 @@ real documents; nothing is mocked, hardcoded, or estimated.
 
 ## Project Structure
 ```
-VerbaAI/
+PrepPilot AI/
 ├── backend/
 │   └── src/
 │       ├── config/db.js

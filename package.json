@@ -1,7 +1,8 @@
 {
-  "name": "verbaai",
+  "name": "preppilot-ai",
   "version": "1.0.0",
-  "description": "VerbaAI - AI Powered Interview & English Communication Coach",
+  "description": "PrepPilot AI - AI Powered Interview & English Communication Coach",
+
   "private": true,
   "workspaces": [
     "frontend",
