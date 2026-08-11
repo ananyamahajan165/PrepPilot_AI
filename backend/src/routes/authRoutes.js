@@ -8,11 +8,6 @@ const validate = require("../middleware/validate");
 const { authLimiter } = require("../middleware/rateLimiter");
 const { error } = require("../utils/apiResponse");
 
-// If GOOGLE_CLIENT_ID/SECRET/CALLBACK_URL aren't set, no "google" strategy
-// was ever registered with Passport (see config/passport.js) — calling
-// passport.authenticate("google") in that state would otherwise surface as
-// an obscure "Unknown authentication strategy" error. This returns a clear,
-// actionable message instead, before Passport is ever involved.
 function requireGoogleConfigured(req, res, next) {
   if (!googleStrategyEnabled) {
     return error(res, 503, "Google sign-in isn't configured on this server yet.");
@@ -43,10 +38,6 @@ const loginRules = [
 router.post("/register", authLimiter, registerRules, validate, signup);
 router.post("/login", authLimiter, loginRules, validate, login);
 
-// Google OAuth. `session: false` on both calls is what keeps this from
-// creating a second, parallel auth system — Passport runs the handshake
-// and hands us a verified profile, but never touches req.session or
-// express-session; googleCallback then issues our normal JWT session.
 router.get(
   "/google",
   authLimiter,
@@ -63,11 +54,6 @@ router.get(
   googleCallback
 );
 
-// No authLimiter here: these aren't credential-guessable (they require a
-// valid signed cookie, not a password), and the general apiLimiter already
-// covers abuse. No `protect` middleware either — logout/refresh must keep
-// working even after the access token has expired, since the whole point of
-// the refresh token is to recover from that.
 router.post("/refresh", refreshToken);
 router.post("/logout", logout);
 
