@@ -6,6 +6,6 @@ const PORT = process.env.PORT || 5001;
 
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`VerbaAI backend listening on port ${PORT}`);
+    console.log(`PrepPilot AI backend listening on port ${PORT}`);
   });
 });
