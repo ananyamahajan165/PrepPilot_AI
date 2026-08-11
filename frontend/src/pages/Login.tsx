@@ -15,16 +15,13 @@ export default function Login() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Google OAuth failures land back here as a redirect (not a JSON
-  // response — see authRoutes.js / authController.js's googleCallback),
-  // so the error has to be read from the URL instead of a caught request.
   useEffect(() => {
     if (searchParams.get("error") === "google_auth_failed") {
       setError("Google sign-in didn't complete. Please try again.");
       searchParams.delete("error");
       setSearchParams(searchParams, { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   async function handleSubmit(e: FormEvent) {
@@ -55,7 +52,7 @@ export default function Login() {
         {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
       </button>
       <Link to="/" className={"font-display text-xl font-medium mb-8 text-fg"}>
-        Verba<span className="text-primary italic">AI</span>
+        PrepPilot <span className="text-primary italic">AI</span>
       </Link>
 
       <form

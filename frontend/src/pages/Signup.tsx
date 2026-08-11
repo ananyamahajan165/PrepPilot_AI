@@ -15,15 +15,13 @@ export default function Signup() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
-  // Same as Login.tsx — a failed Google attempt redirects back here with
-  // ?error=... rather than a normal caught request/response.
   useEffect(() => {
     if (searchParams.get("error") === "google_auth_failed") {
       setError("Google sign-in didn't complete. Please try again.");
       searchParams.delete("error");
       setSearchParams(searchParams, { replace: true });
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+
   }, []);
 
   async function handleSubmit(e: FormEvent) {
@@ -54,7 +52,7 @@ export default function Signup() {
         {theme === "dark" ? "☀️ Light" : "🌙 Dark"}
       </button>
       <Link to="/" className={"font-display text-xl font-medium mb-8 text-fg"}>
-        Verba<span className="text-primary italic">AI</span>
+        PrepPilot <span className="text-primary italic">AI</span>
       </Link>
 
       <form
@@ -62,7 +60,7 @@ export default function Signup() {
         className={`w-full max-w-sm rounded-2xl p-8 border ${theme === "dark" ? "bg-card border-border" : "bg-card border-border shadow-sm"}`}
       >
         <h1 className={"font-display text-2xl font-medium mb-1 text-fg"}>Create your account</h1>
-        <p className={"text-sm mb-6 text-fg-secondary"}>Start practicing with VerbaAI</p>
+        <p className={"text-sm mb-6 text-fg-secondary"}>Start practicing with PrepPilot AI</p>
 
         {error && (
           <p role="alert" className="mb-4 text-sm text-rose-400 bg-rose-400/10 px-3 py-2 rounded-md">
