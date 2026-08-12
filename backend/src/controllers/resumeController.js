@@ -26,8 +26,6 @@ Analyze it and return a JSON object with exactly these fields:
 Grammar issues, formatting suggestions, and general suggestions are three DIFFERENT categories — don't repeat the same point across them.`;
 }
 
-// POST /api/resume/analyze  (multipart/form-data, field name: "resume")
-// (file presence + PDF mimetype + 5MB limit already enforced by uploadMiddleware.js)
 async function analyzeResume(req, res) {
   if (!req.file) {
     return error(res, 400, "A PDF resume file is required");
@@ -58,7 +56,6 @@ async function analyzeResume(req, res) {
   return success(res, 201, { report });
 }
 
-// GET /api/resume/history
 async function getHistory(req, res) {
   const reports = await ResumeReport.find({ user: req.user._id })
     .sort({ createdAt: -1 })
@@ -67,10 +64,6 @@ async function getHistory(req, res) {
   return success(res, 200, { reports });
 }
 
-// GET /api/resume/history/:id
-// Full report detail — the history list only sends a lightweight summary
-// (see getHistory above), so viewing or downloading a past report fetches
-// the complete document here.
 async function getReport(req, res) {
   const report = await ResumeReport.findOne({ _id: req.params.id, user: req.user._id });
   if (!report) {
