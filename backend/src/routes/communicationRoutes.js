@@ -7,14 +7,14 @@ const {
   getHistory,
   getSession,
   deleteSession,
+  conversationMessage,
+  endConversation,
 } = require("../controllers/communicationController");
 const protect = require("../middleware/authMiddleware");
 const validate = require("../middleware/validate");
 
 router.use(protect);
 
-// GET /api/communication/topic — Speaking Practice topic generator.
-// ?difficulty=easy|medium|hard&exclude=Topic%20One,Topic%20Two
 router.get(
   "/topic",
   [
@@ -36,8 +36,7 @@ router.post(
       .optional()
       .isFloat({ min: 0 })
       .withMessage("durationSeconds must be a non-negative number"),
-    // Speaking Practice topic metadata — all optional, sent only when the
-    // student answered a generated topic rather than practicing free-form.
+
     body("topic").optional().trim().isLength({ max: 300 }).withMessage("topic is too long"),
     body("difficulty").optional().isIn(["easy", "medium", "hard"]).withMessage("difficulty must be 'easy', 'medium', or 'hard'"),
     body("category").optional().trim().isLength({ max: 100 }).withMessage("category is too long"),
@@ -66,6 +65,24 @@ router.delete(
   [param("id").isMongoId().withMessage("Invalid session id")],
   validate,
   deleteSession
+);
+
+const historyItemValidators = [
+  body("history").optional().isArray({ max: 60 }).withMessage("history must be an array of at most 60 messages"),
+  body("history.*.role").optional().isIn(["assistant", "user"]).withMessage("each history item needs a valid role"),
+  body("history.*.content").optional().isString().trim().isLength({ max: 2000 }).withMessage("each history item's content is too long"),
+];
+
+router.post("/conversation/message", historyItemValidators, validate, conversationMessage);
+
+router.post(
+  "/conversation/end",
+  [
+    ...historyItemValidators,
+    body("durationSeconds").optional().isFloat({ min: 0 }).withMessage("durationSeconds must be a non-negative number"),
+  ],
+  validate,
+  endConversation
 );
 
 module.exports = router;
