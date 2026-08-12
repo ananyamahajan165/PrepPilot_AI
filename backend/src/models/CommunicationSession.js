@@ -6,25 +6,32 @@ const communicationSessionSchema = new mongoose.Schema(
   {
     user: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true, index: true },
 
-    // --- Input ---
     inputMethod: { type: String, enum: ["text", "voice"], required: true },
     transcript: { type: String, required: true },
     wordCount: { type: Number, required: true, default: 0 },
-    durationSeconds: { type: Number, default: 0 }, // speaking time; 0 for typed input
+    durationSeconds: { type: Number, default: 0 },
 
-    // --- Topic Generator (Speaking Practice) ---
-    // All optional: free-form Communication Coach sessions (no topic picked)
-    // leave these unset, so this is fully backward-compatible.
+    // "single" = the existing one-shot text/voice practice flow.
+    // "conversation" = the new AI conversational coach flow. Optional/defaulted
+    // so every existing session and every existing query keeps working as-is.
+    mode: { type: String, enum: ["single", "conversation"], default: "single" },
+    conversationHistory: [
+      {
+        role: { type: String, enum: ["assistant", "user"], required: true },
+        content: { type: String, required: true },
+        at: { type: Date, default: Date.now },
+      },
+    ],
+    messageCount: { type: Number, default: 0 },
+
     topic: { type: String, default: "" },
     difficulty: { type: String, enum: ["easy", "medium", "hard", ""], default: "" },
     category: { type: String, default: "" },
     recommendedMinutes: { type: Number, default: 0 },
 
-    // --- Filler words (detected deterministically, not left to the LLM) ---
     fillerWordCount: { type: Number, default: 0 },
     fillerWordsFound: [{ type: String }],
 
-    // --- Scores (0-100 each) ---
     scores: {
       confidence: scoreField,
       communication: scoreField,
@@ -35,7 +42,6 @@ const communicationSessionSchema = new mongoose.Schema(
     },
     overallScore: { type: Number, min: 0, max: 100, required: true },
 
-    // --- Coaching feedback ---
     positiveFeedback: [{ type: String }],
     areasOfImprovement: [{ type: String }],
     detailedExplanation: { type: String, default: "" },
