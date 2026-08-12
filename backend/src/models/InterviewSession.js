@@ -18,11 +18,6 @@ const interviewSessionSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-// Every real query against this collection filters by user and sorts by
-// createdAt (history, dashboard's recent/timeline aggregations, streak
-// calculation) — a compound index serves both at once, rather than using
-// a single-field index and sorting in memory. Matches the same pattern
-// already used on CommunicationSession and ResumeReport.
 interviewSessionSchema.index({ user: 1, createdAt: -1 });
 
 module.exports = mongoose.model("InterviewSession", interviewSessionSchema);
