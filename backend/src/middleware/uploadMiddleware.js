@@ -14,15 +14,9 @@ function fileFilter(req, file, cb) {
 const upload = multer({
   storage,
   fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB
+  limits: { fileSize: 5 * 1024 * 1024 },
 });
 
-// Route-level error handler for the upload step specifically. Both
-// multer's own errors (e.g. LIMIT_FILE_SIZE) and our fileFilter's plain
-// Error arrive here without a statusCode, so the app-wide centralized
-// error handler in app.js would otherwise treat them as unexpected 5xx
-// failures and mask them behind a generic "Internal server error" —
-// these are genuine, expected 4xx client input problems and should say so.
 function handleUploadErrors(err, req, res, next) {
   if (err instanceof multer.MulterError) {
     if (err.code === "LIMIT_FILE_SIZE") {
