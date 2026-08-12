@@ -3,13 +3,23 @@ const { askGeminiJSON, AllGeminiKeysExhaustedError } = require("../utils/geminiC
 const { detectFillerWords } = require("../utils/fillerWordDetector");
 const { success, error } = require("../utils/apiResponse");
 const { TOPIC_BANK, DIFFICULTIES } = require("../utils/topicBank");
+const { buildConversationTurnPrompt, buildConversationAnalysisPrompt } = require("../utils/conversationCoach");
 
 function countWords(text) {
   return text.trim().split(/\s+/).filter(Boolean).length;
 }
 
-// Difficulty-specific evaluation focus, per the product spec: evaluation
-// gets stricter and covers more dimensions as difficulty increases.
+const MAX_CONVERSATION_MESSAGES = 60;
+const MAX_MESSAGE_LENGTH = 2000;
+
+function sanitizeHistory(history) {
+  if (!Array.isArray(history)) return [];
+  return history
+    .filter((t) => t && (t.role === "assistant" || t.role === "user") && typeof t.content === "string" && t.content.trim())
+    .slice(-MAX_CONVERSATION_MESSAGES)
+    .map((t) => ({ role: t.role, content: t.content.trim().slice(0, MAX_MESSAGE_LENGTH) }));
+}
+
 const DIFFICULTY_RUBRIC = {
   easy: "Since this is an EASY topic, focus your evaluation mainly on grammar, confidence, and clarity. Be encouraging — this is a warm-up level topic, so don't be overly harsh on depth or structure.",
   medium: "Since this is a MEDIUM topic, evaluate communication, vocabulary, structure, confidence, and professionalism. Expect a more organized, interview-ready answer than an Easy topic.",
@@ -72,12 +82,6 @@ Evaluate their communication and confidence, then return a JSON object with EXAC
 If the response is very short (under 15 words), note in areasOfImprovement that elaborating more would help, and factor that into the communication and fluency scores. If confidence seems low based on hedging language ("I think maybe", "I'm not sure but", excessive qualifiers), include specific confidence-building advice in areasOfImprovement or detailedExplanation.`;
 }
 
-// GET /api/communication/topic
-// Query params: difficulty (required: easy|medium|hard), exclude (optional,
-// comma-separated topic strings already seen this session so we don't repeat).
-// Topics are a curated static bank (see utils/topicBank.js), not
-// AI-generated — this keeps "Generate Another Topic" instant and free to
-// click unlimited times, with no Gemini round-trip needed just to pick one.
 function getTopic(req, res) {
   const difficulty = String(req.query.difficulty || "").toLowerCase();
   if (!DIFFICULTIES.includes(difficulty)) {
@@ -92,9 +96,6 @@ function getTopic(req, res) {
   const pool = TOPIC_BANK[difficulty];
   let candidates = pool.filter((t) => !excludeList.includes(t.topic));
 
-  // Once every topic at this difficulty has been shown, reset the pool
-  // rather than telling the user "no more topics" — the spec requires
-  // unlimited clicks, so we allow the cycle to repeat from here.
   if (candidates.length === 0) {
     candidates = pool;
   }
@@ -110,10 +111,6 @@ function getTopic(req, res) {
   });
 }
 
-// POST /api/communication/analyze
-// (transcript/inputMethod/durationSeconds shape already validated in communicationRoutes.js)
-// topic/difficulty/category/recommendedMinutes are all optional — omitting
-// them keeps this endpoint working exactly as before for free-form practice.
 async function analyzeSession(req, res) {
   const { transcript, inputMethod, durationSeconds, topic, difficulty, category, recommendedMinutes } = req.body;
 
@@ -130,11 +127,6 @@ async function analyzeSession(req, res) {
     category: category || "",
   });
 
-  // Deliberately caught here rather than left to the app-wide error
-  // handler: a Gemini/network failure is a real, distinct situation the
-  // user can act on ("try again"), not a generic server bug — it deserves
-  // its own message instead of being flattened into "Internal server error".
-  // The real cause is still fully logged server-side either way.
   let result;
   try {
     result = await askGeminiJSON(prompt);
@@ -208,12 +200,6 @@ async function analyzeSession(req, res) {
   return success(res, 201, { session });
 }
 
-// GET /api/communication/history
-// Query params (all optional, validated in communicationRoutes.js):
-//   search   - case-insensitive substring match against transcript
-//   type     - "text" | "voice"
-//   page     - 1-based page number, default 1
-//   limit    - page size, default 10, max 50
 async function getHistory(req, res) {
   const { search, type } = req.query;
   const page = Math.max(parseInt(req.query.page, 10) || 1, 1);
@@ -237,7 +223,6 @@ async function getHistory(req, res) {
   });
 }
 
-// GET /api/communication/history/:id
 async function getSession(req, res) {
   const session = await CommunicationSession.findOne({ _id: req.params.id, user: req.user._id });
   if (!session) {
@@ -246,7 +231,6 @@ async function getSession(req, res) {
   return success(res, 200, { session });
 }
 
-// DELETE /api/communication/history/:id
 async function deleteSession(req, res) {
   const session = await CommunicationSession.findOneAndDelete({ _id: req.params.id, user: req.user._id });
   if (!session) {
@@ -255,4 +239,123 @@ async function deleteSession(req, res) {
   return success(res, 200, {}, "Session deleted");
 }
 
-module.exports = { getTopic, analyzeSession, getHistory, getSession, deleteSession };
+async function conversationMessage(req, res) {
+  const history = sanitizeHistory(req.body.history);
+
+  const prompt = buildConversationTurnPrompt(history);
+
+  let result;
+  try {
+    result = await askGeminiJSON(prompt);
+  } catch (err) {
+    if (err instanceof AllGeminiKeysExhaustedError) {
+      return error(res, 503, err.message);
+    }
+    console.error("Conversation Coach: Gemini request failed:", err.message);
+    return error(res, 502, "I couldn't process that response. Please try again.");
+  }
+
+  const message =
+    typeof result.message === "string" && result.message.trim()
+      ? result.message.trim()
+      : "Sorry, could you say that again?";
+  const correction = typeof result.correction === "string" && result.correction.trim() ? result.correction.trim() : null;
+
+  return success(res, 200, { message, correction });
+}
+
+async function endConversation(req, res) {
+  const history = sanitizeHistory(req.body.history);
+  const durationSeconds = req.body.durationSeconds || 0;
+
+  const userTurns = history.filter((t) => t.role === "user");
+  if (userTurns.length === 0) {
+    return error(res, 400, "There's no conversation to analyze yet — say something first!");
+  }
+
+  const transcript = userTurns.map((t) => t.content).join("\n\n");
+  const wordCount = countWords(transcript);
+  const { fillerWordCount, fillerWordsFound } = detectFillerWords(transcript);
+
+  const prompt = buildConversationAnalysisPrompt(history);
+
+  let result;
+  try {
+    result = await askGeminiJSON(prompt);
+  } catch (err) {
+    if (err instanceof AllGeminiKeysExhaustedError) {
+      return error(res, 503, err.message);
+    }
+    console.error("Conversation Coach: Gemini analysis failed:", err.message);
+    return error(res, 502, "Your AI coach couldn't finish the analysis just now. Please try again in a moment.");
+  }
+
+  const scores = result.scores || {};
+  const scoreValues = [
+    scores.confidence,
+    scores.communication,
+    scores.professionalism,
+    scores.grammar,
+    scores.vocabulary,
+    scores.fluency,
+  ].map((v) => (typeof v === "number" ? v : 0));
+  const overallScore = Math.round(scoreValues.reduce((a, b) => a + b, 0) / scoreValues.length);
+
+  let session;
+  try {
+    session = await CommunicationSession.create({
+      user: req.user._id,
+      inputMethod: "voice",
+      transcript,
+      wordCount,
+      durationSeconds,
+      mode: "conversation",
+      conversationHistory: history,
+      messageCount: history.length,
+      topic: "AI Conversation Practice",
+      difficulty: "",
+      category: "Conversation",
+      recommendedMinutes: 0,
+      fillerWordCount,
+      fillerWordsFound,
+      scores: {
+        confidence: scores.confidence ?? 0,
+        communication: scores.communication ?? 0,
+        professionalism: scores.professionalism ?? 0,
+        grammar: scores.grammar ?? 0,
+        vocabulary: scores.vocabulary ?? 0,
+        fluency: scores.fluency ?? 0,
+      },
+      overallScore,
+      positiveFeedback: result.positiveFeedback || [],
+      areasOfImprovement: result.areasOfImprovement || [],
+      detailedExplanation: result.detailedExplanation || "",
+      suggestedResponse: result.suggestedResponse || "",
+      interviewTips: result.interviewTips || [],
+      practiceExercise: result.practiceExercise || "",
+      dailyChallenge: result.dailyChallenge || "",
+      motivationalMessage: result.motivationalMessage || "",
+      vocabularySuggestions: result.vocabularySuggestions || [],
+      grammarCorrections: result.grammarCorrections || [],
+      actionPlan: result.actionPlan || [],
+    });
+  } catch (err) {
+    console.error("Conversation Coach: failed to save session:", err.message);
+    return error(res, 500, "Got your feedback but couldn't save this session. Please try again.");
+  }
+
+  return success(res, 201, {
+    session,
+    conversationSummary: result.conversationSummary || null,
+  });
+}
+
+module.exports = {
+  getTopic,
+  analyzeSession,
+  getHistory,
+  getSession,
+  deleteSession,
+  conversationMessage,
+  endConversation,
+};
