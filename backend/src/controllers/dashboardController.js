@@ -3,13 +3,10 @@ const CommunicationSession = require("../models/CommunicationSession");
 const ResumeReport = require("../models/ResumeReport");
 const { success } = require("../utils/apiResponse");
 
-// Product-level targets (constants, not per-user data) — how many practice
-// actions count as "on track" for the day/week. Progress *toward* these is
-// always computed live from real documents below; only the target itself
-// is a fixed rule, the same way a fitness app might define "10k steps/day."
 const DAILY_GOAL_TARGET = 3;
 const WEEKLY_GOAL_TARGET = 10;
-const TIMELINE_DAYS = 371; // 53 weeks — enough for a full GitHub-style contribution grid
+const TIMELINE_YEARS_BACK = 3;
+const TIMELINE_DAYS = 371 + TIMELINE_YEARS_BACK * 366;
 
 function startOfDay(date) {
   const d = new Date(date);
@@ -24,12 +21,9 @@ function daysAgo(n) {
 }
 
 function toDateKey(date) {
-  return new Date(date).toISOString().slice(0, 10); // YYYY-MM-DD
+  return new Date(date).toISOString().slice(0, 10);
 }
 
-// Returns the set of distinct calendar days (UTC) on which a given
-// collection has at least one document for this user, grouped server-side
-// so we never pull raw documents just to compute a streak.
 async function distinctActiveDays(Model, userId) {
   const rows = await Model.aggregate([
     { $match: { user: userId } },
@@ -39,9 +33,7 @@ async function distinctActiveDays(Model, userId) {
 }
 
 function computeStreak(activeDaySet) {
-  // Current streak: walk backward from today (or yesterday, so a user who
-  // hasn't practiced *yet* today doesn't see their streak reset to 0
-  // prematurely) counting consecutive active days.
+
   let current = 0;
   const today = startOfDay(new Date());
   const hasToday = activeDaySet.has(toDateKey(today));
@@ -52,8 +44,6 @@ function computeStreak(activeDaySet) {
     cursor = new Date(cursor.getTime() - 86400000);
   }
 
-  // Longest streak ever: sort all active days and find the longest run of
-  // consecutive calendar dates.
   const sortedDays = [...activeDaySet].sort();
   let longest = 0;
   let run = 0;
@@ -72,10 +62,6 @@ function computeStreak(activeDaySet) {
   return { current, longest: Math.max(longest, current) };
 }
 
-// Given an ascending-by-date array of numeric scores, compares the average
-// of the most recent half against the earlier half. Used for grammar
-// improvement, vocabulary growth, and confidence trend — all the same shape
-// of "am I getting better" signal, just over different score fields.
 function computeTrend(scoresAsc) {
   if (scoresAsc.length < 2) return 0;
   const mid = Math.floor(scoresAsc.length / 2);
@@ -85,8 +71,6 @@ function computeTrend(scoresAsc) {
   return Math.round(avg(later) - avg(earlier));
 }
 
-// Rule-based recommendation derived from the user's real aggregate stats —
-// not a hardcoded message, a deterministic decision over live numbers.
 function recommendNextPractice({
   totalResumeReports,
   totalInterviews,
@@ -142,30 +126,20 @@ function recommendNextPractice({
   };
 }
 
-// Maps the PRD's product ladder (Beginner -> Intermediate -> Interview Ready
-// -> Placement Ready) onto real aggregate stats. Thresholds are a product
-// rule (like a fitness app's belt system); the *placement on the ladder* is
-// always computed from this user's real documents.
 const LEARNING_STAGES = ["Beginner", "Intermediate", "Interview Ready", "Placement Ready"];
 
 function computeLearningStage({ totalInterviews, totalCommunicationSessions, totalResumeReports, averageScore }) {
   const hasAnyActivity = totalInterviews > 0 || totalCommunicationSessions > 0 || totalResumeReports > 0;
-  if (!hasAnyActivity) return 0; // Beginner
+  if (!hasAnyActivity) return 0;
 
   const isInterviewReady = totalInterviews >= 5 && averageScore >= 60;
   const isPlacementReady = isInterviewReady && averageScore >= 80 && totalResumeReports >= 1;
 
   if (isPlacementReady) return 3;
   if (isInterviewReady) return 2;
-  return 1; // Intermediate
+  return 1;
 }
 
-// Turns real deltas/aggregates into short, first-person coaching
-// observations — the "AI Insights" section. Deliberately rule-based (not
-// an extra Gemini call on every dashboard load, which would add latency
-// and cost to a page that gets hit constantly) — but every sentence is
-// generated FROM real numbers already computed above, never hardcoded copy
-// unless there's genuinely nothing to observe yet.
 function buildAiInsights({
   confidenceTrend,
   vocabularyGrowth,
@@ -220,9 +194,6 @@ function buildAiInsights({
   return insights.slice(0, 4);
 }
 
-// Real, computed achievements — each one is either earned or not based on
-// actual documents, never toggled manually. `progress` (0-1) lets the
-// frontend show a partial-progress state for unearned ones.
 function buildAchievements({
   streak,
   totalInterviews,
@@ -284,7 +255,6 @@ function buildAchievements({
   ];
 }
 
-// GET /api/dashboard
 async function getDashboard(req, res) {
   const userId = req.user._id;
   const rangeStart = daysAgo(TIMELINE_DAYS - 1);
@@ -420,9 +390,7 @@ async function getDashboard(req, res) {
       { $match: { user: userId, createdAt: { $gte: prevWeekStart, $lt: weekStart } } },
       { $group: { _id: null, avgAts: { $avg: "$atsScore" } } },
     ]),
-    // Per-category interview performance — powers the "your X answers are
-    // stronger than Y" insight. Only categories with 2+ attempts count, so
-    // a single lucky/unlucky question doesn't skew the comparison.
+
     InterviewSession.aggregate([
       { $match: { user: userId } },
       { $group: { _id: "$category", avgScore: { $avg: "$overallScore" }, count: { $sum: 1 } } },
@@ -502,9 +470,6 @@ async function getDashboard(req, res) {
   const fillerWordAvg = Math.round((fillerWordAgg[0]?.avgFillers || 0) * 10) / 10;
   const totalWordsSpoken = fillerWordAgg[0]?.totalWords || 0;
 
-  // Build a dense 14-day array (oldest -> newest) so the frontend never has
-  // to fill gaps itself — days with no interview sessions simply show
-  // avgScore: null.
   const scoreByDay = new Map(timelineInterviewRows.map((r) => [r._id, { avgScore: Math.round(r.avgScore), count: r.count }]));
   const communicationCountByDay = new Map(timelineCommunicationRows.map((r) => [r._id, r.count]));
   const resumeCountByDay = new Map(timelineResumeRows.map((r) => [r._id, r.count]));
@@ -531,7 +496,6 @@ async function getDashboard(req, res) {
     communicationAvgConfidence,
   });
 
-  // Merge the three recent-activity feeds into one, sorted by recency.
   const recentActivity = [
     ...recentInterviews.map((s) => ({
       id: s._id,
@@ -616,9 +580,7 @@ async function getDashboard(req, res) {
     achievements,
     categoryPerformance,
     bestInterviewScore,
-    // Everything the Communication Coach flagship feature contributes to
-    // the dashboard, kept in its own object so it's easy to find and so it
-    // doesn't collide with the interview-derived averages above.
+
     communicationStats: {
       totalSessions: totalCommunicationSessions,
       averageScores: {
