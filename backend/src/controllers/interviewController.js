@@ -3,7 +3,6 @@ const { askGeminiJSON } = require("../utils/geminiClient");
 const { CATEGORIES } = require("../utils/interviewCategories");
 const { success, error } = require("../utils/apiResponse");
 
-// GET /api/interview/categories
 async function listCategories(req, res) {
   return success(res, 200, { categories: CATEGORIES });
 }
@@ -25,10 +24,6 @@ Return a JSON object with exactly this field:
 }`;
 }
 
-// POST /api/interview/questions
-// (category/difficulty/count shape already validated in interviewRoutes.js)
-// Questions are generated fresh by Gemini every time — never hardcoded —
-// and are NOT persisted here; only the user's eventual answers get stored.
 async function getInterviewQuestions(req, res) {
   const { category, difficulty } = req.body;
   const count = Math.min(Math.max(parseInt(req.body.count, 10) || 5, 1), 10);
@@ -40,9 +35,6 @@ async function getInterviewQuestions(req, res) {
     return error(res, 502, "Couldn't generate questions right now. Please try again.");
   }
 
-  // Defensive trim/pad in case Gemini returns a slightly different count
-  // than requested — never silently return more than asked for, and never
-  // fabricate a question if fewer came back (just return what's real).
   questions = questions.slice(0, count);
 
   return success(res, 200, { category, difficulty, questions });
@@ -86,13 +78,6 @@ async function evaluateOne({ userId, category, difficulty, question, answer }) {
   });
 }
 
-// POST /api/interview/submit
-// body: { category, difficulty, answers: [{ question, answer }, ...] }
-// (shape already validated in interviewRoutes.js)
-// Each answer is scored and stored as its own InterviewSession document —
-// this keeps the existing per-question history/dashboard aggregation model
-// intact while letting the frontend run a full multi-question practice
-// round before submitting everything together.
 async function submitAnswers(req, res) {
   const { category, difficulty, answers } = req.body;
 
@@ -116,7 +101,6 @@ async function submitAnswers(req, res) {
   return success(res, 201, { sessions, summary });
 }
 
-// GET /api/interview/history
 async function getHistory(req, res) {
   const sessions = await InterviewSession.find({ user: req.user._id }).sort({ createdAt: -1 }).limit(50);
   return success(res, 200, { sessions });
