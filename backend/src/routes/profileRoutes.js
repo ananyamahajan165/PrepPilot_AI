@@ -13,9 +13,6 @@ const validate = require("../middleware/validate");
 
 router.use(protect);
 
-// A base64 data URL is ~1.37x the original file size — 3MB decoded is
-// roughly a 4.1M-character string. Capped here so someone can't store an
-// enormous image directly in a MongoDB document.
 const MAX_AVATAR_DATA_URL_LENGTH = 4_200_000;
 
 router.get("/", getProfile);
@@ -56,7 +53,7 @@ router.put(
   "/avatar",
   [
     body("avatarDataUrl")
-      .matches(/^data:image\//)
+      .matches(/^data:image\/(png|jpe?g|gif|webp);base64,/i)
       .withMessage("A valid image data URL is required")
       .isLength({ max: MAX_AVATAR_DATA_URL_LENGTH })
       .withMessage("Image is too large — please use a photo under 3MB"),
