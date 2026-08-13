@@ -1,9 +1,4 @@
-// Fixed bank of Speaking Practice topics, grouped by difficulty. Like
-// interviewCategories.js, this is curated *content* for the topic picker —
-// the AI's job is evaluating the user's spoken/typed answer, not inventing
-// topics, so topic text itself is deterministic rather than Gemini-generated.
-// Each topic carries its own category, a recommended speaking time, and 2-3
-// quick tips shown before the user starts answering.
+
 
 const EASY = [
   { topic: "Self Introduction", category: "Personal", recommendedMinutes: 1, tips: [
